@@ -18,8 +18,7 @@ else
     ngx.log(ngx.INFO, "connection ok:", ok) 
 end
 
-host_to_connections = {}
-connections_to_host_list = {}
+connections_number_list = {}
 
 -- [[ Node host list, you can put it all in your redis cache ]]--
 hosts_list = red:lrange("NODE_HOST_LIST",0, -1) or {}
@@ -27,10 +26,11 @@ hosts_list = red:lrange("NODE_HOST_LIST",0, -1) or {}
 -- [[ Core dispatcher ]]--
 for i, host in ipairs(hosts_list)
 do
-    ngx.log(ngx.ERR, "the node address ==>>", host)
-    host_to_connections[host] = tonumber(red:get(host))
-
+    connect_num = tonumber(red:get(host))
+    table.insert(connections_number_list, {host=host, num=connect_num})
 end
+
+table.sort(connections_number_list, function(a, b) return a.num < b.num end)
 
 -- [[ Rand pick up a node ]] --
 host = hosts_list[math.random(#hosts_list)]
