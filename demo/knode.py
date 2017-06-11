@@ -19,35 +19,36 @@ class WebSocketHandler(websocket.WebSocketHandler):
         return True
 
     def open(self):
-		r.incr(node_id)
-		print("open a connection")
+        r.incr(node_id)
+        print("open a connection")
 
     def on_message(self, msg):
-		self.write_message('response by {}:{}'.format(node_id, msg))
+        self.write_message('response by {}:{}'.format(node_id, msg))
 
     def on_close(self):
-		r.decr(node_id)
+        r.decr(node_id)
+
 
 @atexit.register
 def remove_node_from_host_list():
-	r.delete(node_id)
-	r.lrem("NODE_HOST_LIST", node_id)
-	print("remove node data successful ~~")
+    r.delete(node_id)
+    r.lrem("NODE_HOST_LIST", node_id)
+    print("remove node data successful ~~")
 
 if __name__ == '__main__':
-	options.parse_command_line()
-	application = web.Application([
-        (r'/ws',WebSocketHandler),
-        ],
+    options.parse_command_line()
+    application = web.Application([
+        (r'/ws', WebSocketHandler),
+    ],
         debug=True)
-	application.listen(options.port)
-	print 'Listen on ', options.port
-	r.lpush("NODE_HOST_LIST","127.0.0.1:{}".format(options.port))
-	#init host_connection map
-	node_id = "127.0.0.1:{}".format(options.port)
-	r.set(node_id, 0)
-	"""
+    application.listen(options.port)
+    print 'Listen on ', options.port
+    r.lpush("NODE_HOST_LIST", "127.0.0.1:{}".format(options.port))
+    # init host_connection map
+    node_id = "127.0.0.1:{}".format(options.port)
+    r.set(node_id, 0)
+    """
     when the node has shutdown, should clean the node information by pop out ...
     so the node need to do some signal catch (i.e CTRL+C ) and then clean it ...
     """
-	ioloop.IOLoop.instance().start()
+    ioloop.IOLoop.instance().start()
