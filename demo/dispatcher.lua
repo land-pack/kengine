@@ -22,6 +22,7 @@ connections_number_list = {}
 
 -- [[ Node host list, you can put it all in your redis cache ]]--
 hosts_list = red:lrange("NODE_HOST_LIST",0, -1) or {}
+ROOM_SIZE = red:get("NODE_ROOM_SIZE") or 9
 
 -- [[ Core dispatcher ]]--
 for i, host in ipairs(hosts_list)
@@ -31,9 +32,24 @@ do
 end
 
 table.sort(connections_number_list, function(a, b) return a.num < b.num end)
+the_host = ''
 
--- [[ Rand pick up a node ]] --
-host = hosts_list[math.random(#hosts_list)]
+for v in pairs(host_list) do
+    if host_list[v].num % ROOM_SIZE ~= 0 then
+        the_host = host_list[v].host
+    end
+end
+
+if the_host == '' then
+    for v in pairs(host_list)
+    do
+        -- reset the all node used mark to 0
+        -- set redis on production 
+        red:set(host_list[v].host, 0)
+    end
+    -- [[ Rand pick up a node ]] --
+    the_host = host_list[math.random(#host_list)].host
+end
 
 -- [[ Return the host to nginx for proxy pass ]]--
-ngx.var.websocket_addr = host
+ngx.var.websocket_addr = the_host
