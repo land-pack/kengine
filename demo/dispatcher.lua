@@ -11,6 +11,7 @@ local ok, err = red:connect("127.0.0.1", 6379)
 -- [[ Node host list, you can put it all in your redis cache ]]--
 origin_host_list = red:lrange("NODE_HOST_LIST",0, -1) or {}
 ROOM_SIZE = tonumber(red:get("NODE_ROOM_SIZE") or '9')
+DISPATCHER_ALGO = tonumber(red:get("DISPATCHER_ALGO") or '1')
 host_list = {}
 
 -- [[ Core dispatcher ]]--
@@ -30,8 +31,14 @@ for v in pairs(host_list) do
 end
 
 if the_host == '' then
-    -- [[ Rand pick up a node , weight sort ~~]] --
-    the_host = host_list[math.random(#host_list)].host
+    if DISPATCHER_ALGO == '1' then
+        -- [[ Rand pick up a node , weight sort ~~]] --
+        the_host = host_list[math.random(#host_list)].host
+    else
+        -- [[ Pick a node which has least connection ]] --
+        table.sort(host_list, function(a, b) return a.num > b.num end)
+        the_host = host_list[1]
+    end
 end
 
 -- [[ Return the host to nginx for proxy pass ]]--
