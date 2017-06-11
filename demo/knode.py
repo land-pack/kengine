@@ -26,7 +26,8 @@ class WebSocketHandler(websocket.WebSocketHandler):
         self.write_message('response by {}:{}'.format(node_id, msg))
 
     def on_close(self):
-        r.decr(node_id)
+		print("close ~~:")
+		r.decr(node_id)
 
 
 @atexit.register
