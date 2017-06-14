@@ -1,4 +1,7 @@
 from collections import defaultdict
+from concurrent import futures
+
+thread_executor = futures.ThreadPoolExecutor(max_workers=50)
 
 class HandlerManager(object):
 
@@ -39,24 +42,44 @@ class HandlerManager(object):
 		pass
 
 	@classmethod
-	def do_echo(cls, handler, message):
-		pass
+	def send_message(cls, handler, message):
+		try:
+			thread_executor.submit(handler.write_message, ujson.dumps(message))
+		except:
+			print(".....error")
 
 	@classmethod
-	def do_broadcast(cls, message):
-		pass
+	def broadcast_on_room(cls, room, message, ignore=[]):
+		uids = cls.room_to_uids[room]
+		for uid in uids:
+			if uid in ignore:
+				continue
+			handler = cls.uid_to_handler[uid]
+			cls.send_message(handler, message)
+
+	@classmethod
+	def broadcast_on_all(cls, message):
+		for handler in cls.uid_to_handler.values():
+			cls.send_message(handler, message)
 
 class WS(object):
 	pass 
 
 if __name__ == '__main__':
 
-	# for i in xrange(100):
-	# 	ws = WS()
-	# 	ws.uid = '1000{}'.format(i)
-	# 	HandlerManager.add_handler(ws)
+	for i in xrange(8):
+		ws = WS()
+		ws.uid = '1000{}'.format(i)
+		HandlerManager.add_handler(ws)
 	ws1 = WS()
 	ws1.uid = 12345
+	HandlerManager.add_handler(ws1)
+	print(HandlerManager.room_to_uids)
+	HandlerManager.del_handler(ws1)
+	print(HandlerManager.room_to_uids)
+
+	ws1 = WS()
+	ws1.uid = 12348
 	HandlerManager.add_handler(ws1)
 	print(HandlerManager.room_to_uids)
 	HandlerManager.del_handler(ws1)
