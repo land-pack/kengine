@@ -105,7 +105,3 @@ class HandlerManager(object):
     def broadcast_on_all(cls, message):
         for handler in cls.uid_to_handler.values():
             cls.send_message(handler, message)
-
-
-class FakeWS(object):
-    pass
