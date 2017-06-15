@@ -38,6 +38,15 @@ class HandlerManager(object):
 		del cls.uid_to_handler[handelr.uid]
 
 	@classmethod
+	def reset(cls, max_room_size=9):
+		cls.room_uuid_index = 0
+		del cls.room_to_uids
+		cls.room_to_uids = defaultdict(set)
+		del cls.uid_to_handler
+		cls.uid_to_handler = {}
+		cls.max_room_size = max_room_size
+
+	@classmethod
 	def dispatch_message(cls, handler, message):
 		pass
 
@@ -62,23 +71,23 @@ class HandlerManager(object):
 		for handler in cls.uid_to_handler.values():
 			cls.send_message(handler, message)
 
-class WS(object):
+class FakeWS(object):
 	pass 
 
 if __name__ == '__main__':
 
 	for i in xrange(8):
-		ws = WS()
+		ws = FakeWS()
 		ws.uid = '1000{}'.format(i)
 		HandlerManager.add_handler(ws)
-	ws1 = WS()
+	ws1 = FakeWS()
 	ws1.uid = 12345
 	HandlerManager.add_handler(ws1)
 	print(HandlerManager.room_to_uids)
 	HandlerManager.del_handler(ws1)
 	print(HandlerManager.room_to_uids)
 
-	ws1 = WS()
+	ws1 = FakeWS()
 	ws1.uid = 12348
 	HandlerManager.add_handler(ws1)
 	print(HandlerManager.room_to_uids)
