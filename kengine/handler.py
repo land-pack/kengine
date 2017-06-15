@@ -7,7 +7,8 @@ thread_executor = futures.ThreadPoolExecutor(max_workers=50)
 ttl_hb = TTLManager(timeout=150, ttl_type='ping', detail=True)
 ttl_hb.start()
 
-message_manager = MessageManager()
+message_manager = MessageManager(None)
+
 
 class HandlerManager(object):
 
@@ -56,34 +57,33 @@ class HandlerManager(object):
 
     @classmethod
     def route_message(cls, handler, message):
-    	"""
-    	client mssage can be two structure !
-    	example 1 (heart beat)
-    		'p'
-    	example 2 (stanard message)
-    		'{
-    			"method": "recovery",
-    			"platform": "fedora",
-    			"version": "v1.1.1",
-    			"channel": "websocket",
-    			"biz_content":{
-					"uid": "1002922",
-					"roomid": "101"
-    			}
-    		}'
-    	"""
+        """
+        client mssage can be two structure !
+        example 1 (heart beat)
+                'p'
+        example 2 (stanard message)
+                '{
+                        "method": "recovery",
+                        "platform": "fedora",
+                        "version": "v1.1.1",
+                        "channel": "websocket",
+                        "biz_content":{
+                                        "uid": "1002922",
+                                        "roomid": "101"
+                        }
+                }'
+        """
         if message == cls.heart_beat:
             return 'q'
         else:
-        	try:
-        		data = ujson.loads(message)
-     			response = message_manager.rpc(cls, data)
-     			data = ujson.dumps(response)
-     		except:
-     			# print log
-     			return ''
-     		else:
-            	return data
+            try:
+                data = ujson.loads(message)
+                response = message_manager.rpc(cls, data)
+                data = ujson.dumps(response)
+            except:
+                # print log
+                return
+            return data
 
     @classmethod
     def send_message(cls, handler, message):
