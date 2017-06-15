@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 
 import unittest
-from kengine.dispatcher import HandlerManager, FakeWS
+from kengine.handler import HandlerManager, FakeWS
 
 class DispatcherTest(unittest.TestCase):
 

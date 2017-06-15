@@ -1,8 +1,13 @@
 from collections import defaultdict
 from concurrent import futures
+from ttl import TTLManager
+from msg import MessageManager
 
 thread_executor = futures.ThreadPoolExecutor(max_workers=50)
+ttl_hb = TTLManager(timeout=150, ttl_type='ping', detail=True)
+ttl_hb.start()
 
+message_manager = MessageManager()
 
 class HandlerManager(object):
 
@@ -10,6 +15,7 @@ class HandlerManager(object):
     room_to_uids = defaultdict(set)
     room_uuid_index = 0
     max_room_size = 9
+    heart_beat = 'p'
 
     @classmethod
     def _dispatcher_strategy(cls):
@@ -39,17 +45,45 @@ class HandlerManager(object):
         del cls.uid_to_handler[handelr.uid]
 
     @classmethod
-    def reset(cls, max_room_size=9):
+    def reset(cls, max_room_size=9, heart_beat='p'):
         cls.room_uuid_index = 0
         del cls.room_to_uids
         cls.room_to_uids = defaultdict(set)
         del cls.uid_to_handler
         cls.uid_to_handler = {}
         cls.max_room_size = max_room_size
+        cls.heart_beat = heart_beat
 
     @classmethod
-    def dispatch_message(cls, handler, message):
-        pass
+    def route_message(cls, handler, message):
+    	"""
+    	client mssage can be two structure !
+    	example 1 (heart beat)
+    		'p'
+    	example 2 (stanard message)
+    		'{
+    			"method": "recovery",
+    			"platform": "fedora",
+    			"version": "v1.1.1",
+    			"channel": "websocket",
+    			"biz_content":{
+					"uid": "1002922",
+					"roomid": "101"
+    			}
+    		}'
+    	"""
+        if message == cls.heart_beat:
+            return 'q'
+        else:
+        	try:
+        		data = ujson.loads(message)
+     			response = message_manager.rpc(cls, data)
+     			data = ujson.dumps(response)
+     		except:
+     			# print log
+     			return ''
+     		else:
+            	return data
 
     @classmethod
     def send_message(cls, handler, message):

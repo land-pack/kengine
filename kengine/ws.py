@@ -24,6 +24,11 @@ class WebSocketHandler(websocket.WebSocketHandler):
         print("open a connection")
 
     def on_message(self, msg):
+        data = HandlerManager.route_message(msg)
+        if data:
+            self.write_message(data)
+        else:
+            pass
         self.write_message('response by {}:{}'.format(node_id, msg))
 
     def on_close(self):
