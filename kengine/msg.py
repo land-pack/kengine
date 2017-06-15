@@ -30,16 +30,3 @@ class MessageManager(object):
             raise
         else:
             return response
-
-
-
-
-if __name__ == '__main__':
-	my_dispatcher = MyDispatcher()
-	message_manager = MessageManager(my_dispatcher)
-	d1 = {
-		"method": "chat",
-		"biz_content": "hello world"
-	}
-	message_manager.rpc(None, d1)
-
