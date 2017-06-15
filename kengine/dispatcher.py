@@ -14,7 +14,7 @@ class HandlerManager(object):
     @classmethod
     def _dispatcher_strategy(cls):
         target_room = None
-        room_uids_list  = sorted(
+        room_uids_list = sorted(
             cls.room_to_uids.items(), key=lambda x: len(x[1]), reverse=True)
         for room, uids in room_uids_list:
             if len(uids) < cls.max_room_size:
@@ -75,23 +75,3 @@ class HandlerManager(object):
 
 class FakeWS(object):
     pass
-
-if __name__ == '__main__':
-
-    for i in xrange(8):
-        ws = FakeWS()
-        ws.uid = '1000{}'.format(i)
-        HandlerManager.add_handler(ws)
-    ws1 = FakeWS()
-    ws1.uid = 12345
-    HandlerManager.add_handler(ws1)
-    print(HandlerManager.room_to_uids)
-    HandlerManager.del_handler(ws1)
-    print(HandlerManager.room_to_uids)
-
-    ws1 = FakeWS()
-    ws1.uid = 12348
-    HandlerManager.add_handler(ws1)
-    print(HandlerManager.room_to_uids)
-    HandlerManager.del_handler(ws1)
-    print(HandlerManager.room_to_uids)

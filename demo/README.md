@@ -19,6 +19,10 @@ and then make a directory to save your lua script ~
 
     /usr/local/lua
 
+if you haven't been installed virtualenv ,you should install it first
+
+	sudo pip install virtualenv
+
 to run a tornado websocket server as node , you need to install torado 
 
     virtualenv demo
