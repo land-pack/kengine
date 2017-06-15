@@ -34,6 +34,47 @@ class DispatcherTest(unittest.TestCase):
 
 	def test_04_dispatcher_strategy(self):
 		HandlerManager.reset()
+		for i in xrange(8):
+			ws = FakeWS()
+			ws.uid = '1000{}'.format(i)
+			HandlerManager.add_handler(ws)
+		self.assertEqual(len(HandlerManager.uid_to_handler), 8)
+		self.assertEqual(len(HandlerManager.room_to_uids[1]), 8)
+		self.assertEqual(HandlerManager.room_uuid_index, 1)
+
+		for i in xrange(8):
+			ws = FakeWS()
+			ws.uid = '2000{}'.format(i)
+			HandlerManager.add_handler(ws)
+		self.assertEqual(len(HandlerManager.uid_to_handler), 16)
+		self.assertEqual(len(HandlerManager.room_to_uids[1]), 9)
+		self.assertEqual(HandlerManager.room_uuid_index, 2)
+
+		handler_for_uid_10001 = HandlerManager.uid_to_handler.get("10001")
+		handler_for_uid_10002 = HandlerManager.uid_to_handler.get("10002")
+		handler_for_uid_10003 = HandlerManager.uid_to_handler.get("10003")
+		handler_for_uid_10004 = HandlerManager.uid_to_handler.get("10004")
+
+		HandlerManager.del_handler(handler_for_uid_10001)
+		HandlerManager.del_handler(handler_for_uid_10002)
+		HandlerManager.del_handler(handler_for_uid_10003)
+		HandlerManager.del_handler(handler_for_uid_10004)
+
+		self.assertEqual(len(HandlerManager.uid_to_handler), 12)
+		self.assertEqual(len(HandlerManager.room_to_uids[1]), 5)
+		self.assertEqual(len(HandlerManager.room_to_uids[2]), 7)
+		self.assertEqual(HandlerManager.room_uuid_index, 2)
+
+		# now if i add new handler, should come in the room 2
+		ws2 = FakeWS()
+		ws2.uid = '30001'
+		HandlerManager.add_handler(ws2)
+		self.assertEqual(len(HandlerManager.uid_to_handler), 13)
+		self.assertEqual(len(HandlerManager.room_to_uids[1]), 5)
+		self.assertEqual(len(HandlerManager.room_to_uids[2]), 8)
+		self.assertEqual(HandlerManager.room_uuid_index, 2)
+
+
 
 
 if __name__ == '__main__':
