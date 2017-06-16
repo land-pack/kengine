@@ -2,7 +2,7 @@ import atexit
 from handler import HandlerManager
 from tornado.websocket import WebSocketHandler
 
-register_flag = 0
+_clean_node_information_callback_register_flag = 0
 
 
 class KWebSocketHandler(WebSocketHandler):
@@ -10,14 +10,15 @@ class KWebSocketHandler(WebSocketHandler):
     node = None
 
     def __init__(self, *args, **kwargs):
-        global register_flag
-        if register_flag == 0:
+        global _clean_node_information_callback_register_flag
+        if _clean_node_information_callback_register_flag == 0:
             atexit.register(self.remove_node_from_host_list)
-            register_flag = 1
+            _clean_node_information_callback_register_flag = 1
         super(KWebSocketHandler, self).__init__(*args, **kwargs)
 
     def prepare(self):
-        [setattr(self, '{}'.format(k), v[0]) for k, v in self.request.arguments.iteritems()]
+        [setattr(self, '{}'.format(k), v[0])
+         for k, v in self.request.arguments.iteritems()]
 
     def check_origin(self, origin):
         return True
