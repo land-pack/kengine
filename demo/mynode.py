@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append("..")
-
 from kengine.ws import KWebSocketHandler
 from kengine.handler import HandlerManager
 from kengine.msg import MessageManager, BaseDispatcher
