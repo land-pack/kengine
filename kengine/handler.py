@@ -18,6 +18,7 @@ class HandlerManager(object):
     after_open_plugin_func = []
     after_close_plugin_func = []
     method_to_func = {}  # method hash to a function(handler, ws)
+    when_ping_coming = {}
 
     @classmethod
     def _dispatcher_strategy(cls):
@@ -67,12 +68,14 @@ class HandlerManager(object):
         del cls.uid_to_handler[handler.uid]
 
     @classmethod
-    def after_ping(cls):
-        pass
-
-    @classmethod
-    def after_method(cls, methods=[]):
-        pass
+    def when_ping(cls, f):
+        """
+        Usage: the same to `fun_for`
+        """
+        cls.when_ping_coming[f.func_name] = f
+        def wrapper(*args, **kwargs):
+            return
+        return wrapper
 
     @classmethod
     def run_for(cls, f):
@@ -83,7 +86,7 @@ class HandlerManager(object):
         """
         cls.method_to_func[f.func_name] = f
         def wrapper(*args, **kwargs):
-            return 
+            return
         return wrapper
 
     @classmethod
@@ -124,6 +127,8 @@ class HandlerManager(object):
         """
         message = str(message)
         if message == cls.heart_beat:
+            for f_name, f_obj in cls.when_ping_coming.items():
+                f_obj(cls, handler)
             return 'q'
         else:
             try:
@@ -131,7 +136,6 @@ class HandlerManager(object):
                 response = cls.message_manager.rpc(cls, handler, data) or '{}'
                 data = ujson.dumps(response)
             except Exception as ex:
-                print 'error to loads ...json', str(ex)
                 print(traceback.format_exc())
                 return
             return data

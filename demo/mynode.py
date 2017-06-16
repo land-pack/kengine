@@ -27,6 +27,10 @@ class MyDispatcher(BaseDispatcher):
 def chat(handler, ws):
     print 'hello i catch a `chat` method, i gotta do something~'
 
+@HandlerManager.when_ping
+def pinging(handler, ws):
+    print 'i am ping, update my hearbeat of ws'
+
 message_manager = MessageManager(MyDispatcher())
 HandlerManager.message_manager = message_manager
 
