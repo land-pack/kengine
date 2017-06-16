@@ -1,61 +1,46 @@
 import atexit
-import os
-import json
-import redis
-from tornado import web
-from tornado import ioloop
-from tornado import websocket
-from tornado.options import options, define
-from dispatcher import HandlerManager
+from handler import HandlerManager
+from tornado.websocket import WebSocketHandler
 
-r = redis.Redis("127.0.0.1", 6379)
-define("port", default=8109, help="Default port", type=int)
-node_id = "127.0.0.1:{}".format(options.port)
+register_flag = 0
 
 
-class WebSocketHandler(websocket.WebSocketHandler):
+class KWebSocketHandler(WebSocketHandler):
+    r = None
+    node = None
+
+    def __init__(self, *args, **kwargs):
+        global register_flag
+        if register_flag == 0:
+            atexit.register(self.remove_node_from_host_list)
+            register_flag = 1
+        super(KWebSocketHandler, self).__init__(*args, **kwargs)
+
+    def prepare(self):
+        [setattr(self, '{}'.format(k), v[0]) for k, v in self.request.arguments.iteritems()]
 
     def check_origin(self, origin):
         return True
 
     def open(self):
-        r.incr(node_id)
+        print("open a connection >>%s | node=%s" % (self.r, self.node))
+        self.r.incr(self.node)
+        print("increase connection number")
         HandlerManager.add_handler(self)
-        print("open a connection")
 
     def on_message(self, msg):
-        data = HandlerManager.route_message(msg)
+        data = HandlerManager.route_message(self, msg)
         if data:
             self.write_message(data)
         else:
-            pass
-        self.write_message('response by {}:{}'.format(node_id, msg))
+            self.write_message('response by {}:{}'.format(self.node, msg))
 
     def on_close(self):
         print("close ...")
-        r.decr(node_id)
+        self.r.decr(self.node)
+        HandlerManager.del_handler(self)
 
-
-@atexit.register
-def remove_node_from_host_list():
-    r.delete(node_id)
-    r.lrem("NODE_HOST_LIST", node_id)
-    print("remove node data successful ~~")
-
-if __name__ == '__main__':
-    options.parse_command_line()
-    application = web.Application([
-        (r'/ws', WebSocketHandler),
-    ],
-        debug=True)
-    application.listen(options.port)
-    print 'Listen on ', options.port
-    r.lpush("NODE_HOST_LIST", "127.0.0.1:{}".format(options.port))
-    # init host_connection map
-    node_id = "127.0.0.1:{}".format(options.port)
-    r.set(node_id, 0)
-    """
-    when the node has shutdown, should clean the node information by pop out ...
-    so the node need to do some signal catch (i.e CTRL+C ) and then clean it ...
-    """
-    ioloop.IOLoop.instance().start()
+    def remove_node_from_host_list(self):
+        self.r.delete(self.node)
+        self.r.lrem("NODE_HOST_LIST", self.node)
+        print("remove node data successful ~~")

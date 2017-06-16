@@ -8,7 +8,7 @@ from tornado import websocket
 from tornado.options import options, define
 
 
-r = redis.Redis("127.0.0.1", 6379)
+r = redis.Redis("192.168.41.76", 6379)
 define("port", default=8109, help="Default port", type=int)
 node_id = "127.0.0.1:{}".format(options.port)
 

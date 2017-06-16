@@ -1,22 +1,22 @@
+import traceback
 from collections import defaultdict
 from concurrent import futures
 from ttl import TTLManager
-from msg import MessageManager
+import ujson
 
 thread_executor = futures.ThreadPoolExecutor(max_workers=50)
 ttl_hb = TTLManager(timeout=150, ttl_type='ping', detail=True)
 ttl_hb.start()
 
-message_manager = MessageManager(None)
-
 
 class HandlerManager(object):
-
     uid_to_handler = {}
     room_to_uids = defaultdict(set)
     room_uuid_index = 0
     max_room_size = 9
     heart_beat = 'p'
+    after_open_plugin_func = []
+    after_close_plugin_func = []
 
     @classmethod
     def _dispatcher_strategy(cls):
@@ -34,16 +34,44 @@ class HandlerManager(object):
         return target_room
 
     @classmethod
+    def after_open(cls, func):
+        cls.after_open_plugin_func.append(func)
+
+    @classmethod
+    def after_close(cls, func):
+        cls.after_close_plugin_func.append(func)
+
+    @classmethod
+    def exec_after_open_plugin(cls, handler):
+        for i in cls.after_open_plugin_func:
+            i(cls, handler)
+
+    @classmethod
+    def exec_after_close_plugin(cls, handler):
+        for i in cls.after_close_plugin_func:
+            i(cls, handler)
+
+    @classmethod
     def add_handler(cls, handler):
         target_room = cls._dispatcher_strategy()
         setattr(handler, 'room', target_room)
         cls.room_to_uids[target_room].add(handler.uid)
         cls.uid_to_handler[handler.uid] = handler
+        cls.exec_after_open_plugin(handler)
 
     @classmethod
-    def del_handler(cls, handelr):
-        cls.room_to_uids[handelr.room].remove(handelr.uid)
-        del cls.uid_to_handler[handelr.uid]
+    def del_handler(cls, handler):
+        cls.exec_after_close_plugin(handler)
+        cls.room_to_uids[handler.room].remove(handler.uid)
+        del cls.uid_to_handler[handler.uid]
+
+    @classmethod
+    def after_ping(cls):
+        pass
+
+    @classmethod
+    def after_method(cls, methods=[]):
+        pass
 
     @classmethod
     def reset(cls, max_room_size=9, heart_beat='p'):
@@ -78,10 +106,11 @@ class HandlerManager(object):
         else:
             try:
                 data = ujson.loads(message)
-                response = message_manager.rpc(cls, data)
+                response = cls.message_manager.rpc(cls, handler, data)
                 data = ujson.dumps(response)
-            except:
-                # print log
+            except Exception as ex:
+                print 'error to loads ...json', str(ex)
+                print(traceback.format_exc())
                 return
             return data
 
@@ -93,11 +122,11 @@ class HandlerManager(object):
             print(".....error")
 
     @classmethod
-    def broadcast_on_room(cls, room, message, ignore=[]):
+    def broadcast_on_room(cls, room, message, ignore=[], care=[]):
         uids = cls.room_to_uids[room]
+        care = care if care else uids
+        uids = set(uids) - set(ignore) & set(care)
         for uid in uids:
-            if uid in ignore:
-                continue
             handler = cls.uid_to_handler[uid]
             cls.send_message(handler, message)
 

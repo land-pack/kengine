@@ -1,5 +1,4 @@
 class BaseDispatcher(object):
-
     def _to_dict(self, messageid, messagetype, message):
         d = {
             "messageid": messageid,
@@ -17,15 +16,14 @@ class BaseDispatcher(object):
 
 
 class MessageManager(object):
-
     def __init__(self, dispatcher):
         self.dispatcher = dispatcher
 
-    def rpc(self, handler, message):
+    def rpc(self, handler, ws, message):
         request_type = message.get("method")
         try:
             response = getattr(self.dispatcher, request_type, getattr(
-                self.dispatcher, "default"))(handler, message)
+                self.dispatcher, "default"))(handler, ws, message)
         except Exception as ex:
             raise
         else:
