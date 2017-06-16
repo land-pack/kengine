@@ -20,7 +20,19 @@ class MessageManager(object):
         self.dispatcher = dispatcher
 
     def rpc(self, handler, ws, message):
+        """
+        Data structure:
+        {
+            "method": "chat",
+            "body": {
+                "title":"Welcome to Kengine"
+            }
+        }
+        """
         request_type = message.get("method")
+        if request_type in handler.method_to_func:
+            handler.exec_method_event(request_type, ws)
+
         try:
             response = getattr(self.dispatcher, request_type, getattr(
                 self.dispatcher, "default"))(handler, ws, message)

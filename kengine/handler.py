@@ -17,6 +17,7 @@ class HandlerManager(object):
     heart_beat = 'p'
     after_open_plugin_func = []
     after_close_plugin_func = []
+    method_to_func = {}  # method hash to a function(handler, ws)
 
     @classmethod
     def _dispatcher_strategy(cls):
@@ -74,6 +75,26 @@ class HandlerManager(object):
         pass
 
     @classmethod
+    def run_for(cls, f):
+        """
+        @HandlerManager.run_for
+        def chat(handler, ws):
+            pass
+        """
+        cls.method_to_func[f.func_name] = f
+        def wrapper(*args, **kwargs):
+            return 
+        return wrapper
+
+    @classmethod
+    def exec_method_event(cls, request_method, ws):
+        """
+        call by MessageManager
+        """
+        f = cls.method_to_func[request_method]
+        f(cls, ws)
+
+    @classmethod
     def reset(cls, max_room_size=9, heart_beat='p'):
         cls.room_uuid_index = 0
         del cls.room_to_uids
@@ -91,22 +112,23 @@ class HandlerManager(object):
                 'p'
         example 2 (stanard message)
                 '{
-	                "method": "recovery",
-	                "platform": "fedora",
-	                "version": "v1.1.1",
-	                "channel": "websocket",
+                        "method": "recovery",
+                        "platform": "fedora",
+                        "version": "v1.1.1",
+                        "channel": "websocket",
                     "biz_content":{
                         "uid": "1002922",
                         "roomid": "101"
                     }
                 }'
         """
+        message = str(message)
         if message == cls.heart_beat:
             return 'q'
         else:
             try:
                 data = ujson.loads(message)
-                response = cls.message_manager.rpc(cls, handler, data)
+                response = cls.message_manager.rpc(cls, handler, data) or '{}'
                 data = ujson.dumps(response)
             except Exception as ex:
                 print 'error to loads ...json', str(ex)

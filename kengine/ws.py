@@ -24,9 +24,7 @@ class KWebSocketHandler(WebSocketHandler):
         return True
 
     def open(self):
-        print("open a connection >>%s | node=%s" % (self.r, self.node))
         self.r.incr(self.node)
-        print("increase connection number")
         HandlerManager.add_handler(self)
 
     def on_message(self, msg):
@@ -37,11 +35,9 @@ class KWebSocketHandler(WebSocketHandler):
             self.write_message('response by {}:{}'.format(self.node, msg))
 
     def on_close(self):
-        print("close ...")
         self.r.decr(self.node)
         HandlerManager.del_handler(self)
 
     def remove_node_from_host_list(self):
         self.r.delete(self.node)
         self.r.lrem("NODE_HOST_LIST", self.node)
-        print("remove node data successful ~~")
