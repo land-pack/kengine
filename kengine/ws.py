@@ -41,3 +41,7 @@ class KWebSocketHandler(WebSocketHandler):
     def remove_node_from_host_list(self):
         self.r.delete(self.node)
         self.r.lrem("NODE_HOST_LIST", self.node)
+
+    def pre_close(self, reason='somethin ...timeout'):
+        print 'the somethinf has expire ~~'
+        self.close(1000, reason)

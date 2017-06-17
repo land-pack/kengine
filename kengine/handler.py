@@ -1,12 +1,9 @@
 import traceback
 from collections import defaultdict
 from concurrent import futures
-from ttl import TTLManager
 import ujson
 
 thread_executor = futures.ThreadPoolExecutor(max_workers=50)
-ttl_hb = TTLManager(timeout=150, ttl_type='ping', detail=True)
-ttl_hb.start()
 
 
 class HandlerManager(object):
