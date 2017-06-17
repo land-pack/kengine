@@ -1,3 +1,8 @@
+import sys
+
+sys.path.append("..")
+
+import time
 from kengine.ws import KWebSocketHandler
 from kengine.handler import HandlerManager
 from kengine.msg import MessageManager, BaseDispatcher
@@ -23,9 +28,14 @@ class MyDispatcher(BaseDispatcher):
 def chat(handler, ws):
     print 'hello i catch a `chat` method, i gotta do something~'
 
+
 @HandlerManager.when_ping
 def pinging(handler, ws):
     print 'i am ping, update my hearbeat of ws'
+    ioloop.IOLoop.instance().remove_timeout(ws._timeout)
+    ws._timeout = ioloop.IOLoop.instance().add_timeout(
+            time.time() + ws.hearbeat, ws.pre_close)
+
 
 message_manager = MessageManager(MyDispatcher())
 HandlerManager.message_manager = message_manager
@@ -34,6 +44,9 @@ HandlerManager.message_manager = message_manager
 class MyWebSocketHandler(KWebSocketHandler):
 
     def __init__(self, *args, **kwargs):
+        self.hearbeat = 5
+        self._timeout = ioloop.IOLoop.instance().add_timeout(
+            time.time() + 5, self.pre_close)
         self.r = r
         self.node = node
         super(MyWebSocketHandler, self).__init__(*args, **kwargs)
