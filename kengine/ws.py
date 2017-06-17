@@ -42,6 +42,9 @@ class KWebSocketHandler(WebSocketHandler):
         self.r.delete(self.node)
         self.r.lrem("NODE_HOST_LIST", self.node)
 
-    def pre_close(self, reason='somethin ...timeout'):
-        print 'the somethinf has expire ~~'
+    def pre_close(self, code, reason='connection expire ~'):
+        """
+        You should override this! if you want to have some tips before shutdown
+        the websocket connection ~
+        """
         self.close(1000, reason)

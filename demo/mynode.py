@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append("..")
-
 import time
 from kengine.ws import KWebSocketHandler
 from kengine.handler import HandlerManager
@@ -46,10 +42,15 @@ class MyWebSocketHandler(KWebSocketHandler):
     def __init__(self, *args, **kwargs):
         self.hearbeat = 5
         self._timeout = ioloop.IOLoop.instance().add_timeout(
-            time.time() + 5, self.pre_close)
+            time.time() + self.hearbeat, self.pre_close)
         self.r = r
         self.node = node
         super(MyWebSocketHandler, self).__init__(*args, **kwargs)
+
+    def pre_close(self, code=1000, reason='default ~'):
+        d =  'hey ~~you websocket connection has expire ~'
+        self.write_message(d)
+        self.close(1000, 'expire & close it')
 
 if __name__ == '__main__':
     options.parse_command_line()
