@@ -30,6 +30,7 @@ Beginner
 	class MyDispatcher(BaseDispatcher):
 
 	    def chat(self, handler, ws, message):
+	    	HandlerManager.broadcast_on_room(ws.room, message, ignore=[ws.uid])
 	        return 'hey, you said:{}'.format(message)
 
 	message_manager = MessageManager(MyDispatcher())
