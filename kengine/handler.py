@@ -127,7 +127,7 @@ class HandlerManager(object):
         else:
             try:
                 data = ujson.loads(message)
-                response = cls.message_manager.rpc(cls, handler, data) or '{}'
+                response = cls.message_manager.rpc(cls, handler, data) or {}
                 data = ujson.dumps(response)
             except Exception as ex:
                 print(traceback.format_exc())

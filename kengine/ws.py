@@ -29,10 +29,8 @@ class KWebSocketHandler(WebSocketHandler):
 
     def on_message(self, msg):
         data = HandlerManager.route_message(self, msg)
-        if data:
+        if data != '{}':
             self.write_message(data)
-        else:
-            self.write_message('response by {}:{}'.format(self.node, msg))
 
     def on_close(self):
         self.r.decr(self.node)

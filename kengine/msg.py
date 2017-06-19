@@ -1,7 +1,7 @@
 class BaseDispatcher(object):
     def _to_dict(self, messageid, messagetype, message):
         d = {
-            "messageid": messageid,
+            "messageid": str(messageid),
             "messagetype": messagetype,
             "body": message
         }
