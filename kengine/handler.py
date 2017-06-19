@@ -112,13 +112,10 @@ class HandlerManager(object):
                 'p'
         example 2 (stanard message)
                 '{
-                        "method": "recovery",
-                        "platform": "fedora",
-                        "version": "v1.1.1",
-                        "channel": "websocket",
-                    "biz_content":{
-                        "uid": "1002922",
-                        "roomid": "101"
+                        "method": "chat",
+                        "message":{
+                        "uid": "1001",
+                        "room": "1"
                     }
                 }'
         """
