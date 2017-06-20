@@ -1,6 +1,4 @@
-import sys
 import time
-import copy
 
 
 class UserManager(list):
@@ -19,12 +17,17 @@ class User(dict):
         # all real time require value are declare here ~
 
 if __name__ == '__main__':
-    um = UserManager()
+    first_manager = UserManager()
     user1 = User(name='frank', age=25)
-    um.append(user1)
-    print um
+    first_manager.append(user1)
+    print first_manager
+
     time.sleep(0.4)
-    
+    # the second user come in, he/she want the all member user information ~
+    # but do no need query all information about the member , just require real
+    # time field ~
+    second_manager = UserManager()
     user2 = User(name='jack', age=27)
-    um.append(user2)
-    print um
+    second_manager.append(user1)
+    second_manager.append(user2)
+    print second_manager

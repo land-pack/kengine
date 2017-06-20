@@ -10,7 +10,7 @@ from setuptools import setup
 
 setup(
     name='kengine',
-    version='1.0.3',
+    version='1.0.4',
     url='https://github.com/land-pack/kengine',
     license='MIT',
     author='Frank AK',
