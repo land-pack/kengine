@@ -8,7 +8,8 @@ class TestUserManager(unittest.TestCase):
 
 
 	def test_01_user(self):
-		self.assertRaises(User(), NotImplemented)
+		user_frank = User(name='frank', age=25, job='python dev')
+		
 		
 
 
