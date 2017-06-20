@@ -1,4 +1,31 @@
 import time
+import abc
+
+
+class User(dict):
+
+    realtime_require = {}
+
+    def realtime(self):
+        for func_name, func in self.realtime_require.items():
+            self.update({
+                func_name: func()
+            })
+
+    @classmethod
+    def current(cls, f):
+        """
+        @user.latest
+        def account():
+                query from mysql ~~
+                latest_account = ~~
+                return lastest_account
+        """
+        cls.realtime_require[f.func_name] = f
+        def _wrapper(*args, **kwargs):
+
+            return
+        return _wrapper
 
 
 class UserManager(list):
@@ -8,13 +35,12 @@ class UserManager(list):
         super(UserManager, self).append(item)
 
 
-class User(dict):
-
-    def realtime(self):
-        self.update({
-            "time": time.time()
-        })
-        # all real time require value are declare here ~
+@User.current
+def gold_account():
+    """
+    all real time require value are declare here ~
+    """
+    return time.time()
 
 if __name__ == '__main__':
     first_manager = UserManager()
