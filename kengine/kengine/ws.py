@@ -11,7 +11,11 @@ class KWebSocketHandler(WebSocketHandler):
 
     def __init__(self, *args, **kwargs):
         global _clean_node_information_callback_register_flag
+
         if _clean_node_information_callback_register_flag == 0:
+            self.r.lpush("NODE_HOST_LIST", self.node)
+            self.r.set(self.node, 0)
+
             atexit.register(self.remove_node_from_host_list)
             _clean_node_information_callback_register_flag = 1
         super(KWebSocketHandler, self).__init__(*args, **kwargs)
