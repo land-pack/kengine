@@ -36,11 +36,18 @@ class UserManager(list):
 
 
 @User.current
-def gold_account():
+def golds():
     """
     all real time require value are declare here ~
     """
     return time.time()
+
+@User.current
+def idfa():
+    """
+    all real time require value are declare here ~
+    """
+    return 'idfa{}'.format(time.time())
 
 if __name__ == '__main__':
     first_manager = UserManager()
