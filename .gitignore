@@ -1,0 +1,4 @@
+*.pyc
+/dist
+/kengine.egg-info
+.idea/workspace.xml
